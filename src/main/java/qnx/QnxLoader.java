@@ -5,13 +5,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import generic.continues.RethrowContinuesFactory;
 import ghidra.app.util.MemoryBlockUtils;
 import ghidra.app.util.Option;
 import ghidra.app.util.bin.BinaryReader;
 import ghidra.app.util.bin.ByteProvider;
 import ghidra.app.util.importer.MessageLog;
-import ghidra.app.util.opinion.AbstractLibrarySupportLoader;
+import ghidra.app.util.opinion.AbstractProgramWrapperLoader;
 import ghidra.app.util.opinion.LoadSpec;
 import ghidra.app.util.opinion.LoaderTier;
 import ghidra.framework.options.Options;
@@ -36,11 +35,11 @@ import ghidra.util.task.TaskMonitor;
 /**
  * QNX Executable Format loader.
  */
-public class QnxLoader extends AbstractLibrarySupportLoader {
+public class QnxLoader extends AbstractProgramWrapperLoader {
 	/**
 	 * The name of the QNX loader.
 	 */
-	public final static String QNX_NAME = "QNX Executable Format";
+	public final static String QNX_NAME = "QNX Executable Format (LMF)";
 
 	/**
 	 * The minimum length a file has to be for it to qualify as a possible QNX file.
@@ -56,17 +55,14 @@ public class QnxLoader extends AbstractLibrarySupportLoader {
 		}
 
 		try {
-			QnxExecutable qnx = QnxExecutable.createQnxExecutable(RethrowContinuesFactory.INSTANCE, provider);
-			LmfHeader lmfHeader = qnx.getLmfHeader();
-
-			if (lmfHeader != null) {
-				long imageBase = lmfHeader.getImageBase();
+			QnxExecutable qnx = new QnxExecutable(provider);
+			LmfHeader header = qnx.getLmfHeader();
+			if (header != null) {
+				long imageBase = header.getImageBase();
 
 				// QNX programs are either 32 or 16-bit x86 little-endian
-				loadSpecs.add(
-						new LoadSpec(this, imageBase, new LanguageCompilerSpecPair("x86:LE:32:default", "gcc"), true));
-				loadSpecs.add(new LoadSpec(this, imageBase,
-						new LanguageCompilerSpecPair("x86:LE:16:Protected Mode", "default"), true));
+				loadSpecs.add(new LoadSpec(this, imageBase, new LanguageCompilerSpecPair("x86:LE:32:default", "gcc"), true));
+				loadSpecs.add(new LoadSpec(this, imageBase, new LanguageCompilerSpecPair("x86:LE:16:Protected Mode", "default"), true));
 			}
 		} catch (QnxException ex) {
 			// its not a QNX file
@@ -84,7 +80,7 @@ public class QnxLoader extends AbstractLibrarySupportLoader {
 		boolean success = false;
 
 		try {
-			QnxExecutable qnx = QnxExecutable.createQnxExecutable(RethrowContinuesFactory.INSTANCE, provider);
+			QnxExecutable qnx = new QnxExecutable(provider);
 			LmfHeader lmfHeader = qnx.getLmfHeader();
 			Msg.debug(this, "QNX EXE Header\n" + lmfHeader.toString());
 

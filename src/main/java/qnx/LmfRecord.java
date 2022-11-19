@@ -2,7 +2,7 @@ package qnx;
 
 import java.io.IOException;
 
-import ghidra.app.util.bin.format.FactoryBundledWithBinaryReader;
+import ghidra.app.util.bin.BinaryReader;
 
 /**
  * A class to represent the lmf_record struct as defined in
@@ -21,31 +21,18 @@ import ghidra.app.util.bin.format.FactoryBundledWithBinaryReader;
  *      "https://github.com/open-watcom/open-watcom-v2/blob/57ba42ef9e97d074577a3408bb8f28a586c902f7/bld/watcom/h/exeqnx.h#L83">watcom/h/exeqnx.h</a>
  */
 public class LmfRecord {
-	private byte recType;
+	private byte recordType;
 	private short dataNbytes;
 
-	public static LmfRecord createLmfRecord(FactoryBundledWithBinaryReader reader) throws IOException {
-		LmfRecord lmfRecord = (LmfRecord) reader.getFactory().create(LmfRecord.class);
-		lmfRecord.initLmfRecord(reader);
-		return lmfRecord;
+	public LmfRecord(BinaryReader reader) throws IOException {
+		recordType = reader.readNextByte();  // the record type
+		reader.readNextByte();  // reserved
+		dataNbytes = reader.readNextShort();  // size of the following data record
+		reader.readNextShort();  // spare
 	}
 
-	/**
-	 * DO NOT USE THIS CONSTRUCTOR, USE create*(GenericFactory ...) FACTORY METHODS
-	 * INSTEAD.
-	 */
-	public LmfRecord() {
-	}
-
-	private void initLmfRecord(FactoryBundledWithBinaryReader reader) throws IOException {
-		recType = reader.readNextByte();
-		reader.readNextByte();
-		dataNbytes = reader.readNextShort();
-		reader.readNextShort();
-	}
-
-	public byte getType() {
-		return recType;
+	public byte getRecordType() {
+		return recordType;
 	}
 
 	public short getDataNbytes() {

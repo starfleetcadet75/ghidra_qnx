@@ -3,48 +3,33 @@ package qnx;
 import java.io.IOException;
 import java.util.Arrays;
 
-import generic.continues.GenericFactory;
+import ghidra.app.util.bin.BinaryReader;
 import ghidra.app.util.bin.ByteProvider;
-import ghidra.app.util.bin.format.FactoryBundledWithBinaryReader;
 import ghidra.util.Msg;
 
 /**
  * A class to manage loading QNX executables.
  */
 public class QnxExecutable {
-	private FactoryBundledWithBinaryReader reader;
+	private BinaryReader reader;
 	private LmfHeader header;
 	private short verify;
 	private int signature;
 
-	public static QnxExecutable createQnxExecutable(GenericFactory factory, ByteProvider provider)
-			throws IOException, QnxException {
-		QnxExecutable qnx = (QnxExecutable) factory.create(QnxExecutable.class);
-		qnx.initQnxExecutable(factory, provider);
-		return qnx;
-	}
-
-	/**
-	 * DO NOT USE THIS CONSTRUCTOR, USE create*(GenericFactory ...) FACTORY METHODS
-	 * INSTEAD.
-	 */
-	public QnxExecutable() {
-	}
-
-	private void initQnxExecutable(GenericFactory factory, ByteProvider provider) throws IOException, QnxException {
-		reader = new FactoryBundledWithBinaryReader(factory, provider, true);
+	public QnxExecutable(ByteProvider provider) throws IOException, QnxException {
+		reader = new BinaryReader(provider, true);
 
 		// First 6 bytes are the magic signature
 		byte[] magicBytes = reader.readByteArray(0, 6);
-		if (!Arrays.equals(magicBytes, LmfConstants.QNX_SIGNATURE)) {
+		if (!Arrays.equals(magicBytes, LmfConstants.LMF_SIGNATURE)) {
 			throw new QnxException("Not a valid QNX executable");
 		}
 
 		// First 6 bytes are also the first LMF_RECORD
-		LmfRecord record = LmfRecord.createLmfRecord(reader);
+		LmfRecord record = new LmfRecord(reader);
 		int nsegments = (record.getDataNbytes() - LmfConstants.LMF_HEADER_SIZE) / 4;
 
-		this.header = LmfHeader.createLmfHeader(reader, nsegments);
+		this.header = new LmfHeader(reader, nsegments);
 	}
 
 	public void parse() throws IOException, QnxException {
@@ -54,8 +39,8 @@ public class QnxExecutable {
 
 		// Continue parsing records until an image end record is encountered
 		while (true) {
-			LmfRecord record = LmfRecord.createLmfRecord(reader);
-			int recordType = record.getType();
+			LmfRecord record = new LmfRecord(reader);
+			int recordType = record.getRecordType();
 
 			Msg.debug(this, "Parsing record type: " + recordType);
 
@@ -64,7 +49,7 @@ public class QnxExecutable {
 				break;
 			}
 
-			switch (record.getType()) {
+			switch (record.getRecordType()) {
 			case LmfConstants.LMF_HEADER_REC:
 				throw new QnxException("Encountered a second LMF header");
 
@@ -99,7 +84,7 @@ public class QnxExecutable {
 
 			case LmfConstants.LMF_RESOURCE_REC:
 				Msg.debug(this, "Parsing record type: Resource");
-				LmfResource.createLmfResource(reader, record);
+				new LmfResource(reader, record);
 				break;
 
 			case LmfConstants.LMF_RW_END_REC:
@@ -112,11 +97,11 @@ public class QnxExecutable {
 				break;
 
 			default:
-				throw new QnxException("Unknown LMF record type: " + record.getType());
+				throw new QnxException("Unknown LMF record type: " + record.getRecordType());
 			}
 		}
 	}
-
+	
 	public LmfHeader getLmfHeader() {
 		return header;
 	}

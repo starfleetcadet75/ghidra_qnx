@@ -2,7 +2,7 @@ package qnx;
 
 import java.io.IOException;
 
-import ghidra.app.util.bin.format.FactoryBundledWithBinaryReader;
+import ghidra.app.util.bin.BinaryReader;
 
 /**
  * A class to represent the lmf_resource struct as defined in
@@ -21,21 +21,7 @@ import ghidra.app.util.bin.format.FactoryBundledWithBinaryReader;
 public class LmfResource {
 	private short resourceType;
 
-	public static LmfResource createLmfResource(FactoryBundledWithBinaryReader reader, LmfRecord record)
-			throws IOException {
-		LmfResource lmfResource = (LmfResource) reader.getFactory().create(LmfResource.class);
-		lmfResource.initLmfResource(reader, record);
-		return lmfResource;
-	}
-
-	/**
-	 * DO NOT USE THIS CONSTRUCTOR, USE create*(GenericFactory ...) FACTORY METHODS
-	 * INSTEAD.
-	 */
-	public LmfResource() {
-	}
-
-	private void initLmfResource(FactoryBundledWithBinaryReader reader, LmfRecord record) throws IOException {
+	public LmfResource(BinaryReader reader, LmfRecord record) throws IOException {
 		resourceType = reader.readNextShort();
 		reader.readNextShortArray(3);
 		int size = record.getDataNbytes() - LmfConstants.LMF_RESOURCE_SIZE;

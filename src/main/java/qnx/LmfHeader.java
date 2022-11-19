@@ -3,7 +3,7 @@ package qnx;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import ghidra.app.util.bin.format.FactoryBundledWithBinaryReader;
+import ghidra.app.util.bin.BinaryReader;
 
 /**
  * A class to represent the lmf_header struct as defined in
@@ -47,21 +47,7 @@ public class LmfHeader {
 	private long imageBase;
 	private ArrayList<LmfSegmentHeader> segments;
 
-	public static LmfHeader createLmfHeader(FactoryBundledWithBinaryReader reader, int nsegments)
-			throws IOException, QnxException {
-		LmfHeader lmfHeader = (LmfHeader) reader.getFactory().create(LmfHeader.class);
-		lmfHeader.initLmfHeader(reader, nsegments);
-		return lmfHeader;
-	}
-
-	/**
-	 * DO NOT USE THIS CONSTRUCTOR, USE create*(GenericFactory ...) FACTORY METHODS
-	 * INSTEAD.
-	 */
-	public LmfHeader() {
-	}
-
-	private void initLmfHeader(FactoryBundledWithBinaryReader reader, int nsegments) throws IOException, QnxException {
+	public LmfHeader(BinaryReader reader, int nsegments) throws IOException, QnxException {	
 		version = reader.readNextUnsignedShort();
 		cflags = reader.readNextUnsignedShort();
 		cpu = reader.readNextUnsignedShort();
@@ -70,12 +56,12 @@ public class LmfHeader {
 		stackIndex = reader.readNextUnsignedShort();
 		heapIndex = reader.readNextUnsignedShort();
 		argvIndex = reader.readNextUnsignedShort();
-		reader.readNextShortArray(4);
+		reader.readNextShortArray(4);  // spare
 		codeOffset = reader.readNextUnsignedInt();
 		stackNbytes = reader.readNextUnsignedInt();
 		heapNbytes = reader.readNextUnsignedInt();
 		imageBase = reader.readNextUnsignedInt();
-		reader.readNextIntArray(2);
+		reader.readNextIntArray(2);  // spare
 
 		// Create the segment headers
 		segments = new ArrayList<LmfSegmentHeader>();

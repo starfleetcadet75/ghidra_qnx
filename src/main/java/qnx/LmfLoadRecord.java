@@ -3,7 +3,6 @@ package qnx;
 import java.io.IOException;
 
 import ghidra.app.util.bin.BinaryReader;
-import ghidra.app.util.bin.format.FactoryBundledWithBinaryReader;
 
 public class LmfLoadRecord implements Comparable<LmfLoadRecord> {
 	/**
@@ -23,7 +22,7 @@ public class LmfLoadRecord implements Comparable<LmfLoadRecord> {
 	 */
 	private int size;
 
-	LmfLoadRecord(FactoryBundledWithBinaryReader reader, LmfRecord record) throws IOException {
+	public LmfLoadRecord(BinaryReader reader, LmfRecord record) throws IOException {
 		segmentIndex = reader.readNextShort();
 		virtAddr = reader.readNextInt();
 		physAddr = reader.getPointerIndex();

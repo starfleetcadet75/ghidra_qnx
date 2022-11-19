@@ -4,7 +4,7 @@ public class LmfConstants {
 	/**
 	 * The signature for QNX executables.
 	 */
-	public final static byte[] QNX_SIGNATURE = new byte[] { 0x00, 0x00, 0x38, 0x00, 0x00, 0x00 };
+	public final static byte[] LMF_SIGNATURE = new byte[] { 0x00, 0x00, 0x38, 0x00, 0x00, 0x00 };
 
 	public final static int LMF_RECORD_SIZE = 6;
 

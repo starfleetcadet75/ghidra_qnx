@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import ghidra.app.util.bin.BinaryReader;
-import ghidra.app.util.bin.format.FactoryBundledWithBinaryReader;
 import ghidra.app.util.importer.MessageLog;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSpace;
@@ -23,12 +22,12 @@ public class LmfSegmentHeader {
 	private long startAddress;
 	private ArrayList<LmfLoadRecord> dataBlocks;
 
-	LmfSegmentHeader(FactoryBundledWithBinaryReader reader) throws IOException, QnxException {
+	public LmfSegmentHeader(BinaryReader reader) throws IOException, QnxException {
 		dataBlocks = new ArrayList<LmfLoadRecord>();
 
 		int segment = reader.readNextInt();
-		segmentType = segment >> 28; // Uppermost byte indicates the type of this segment
-		segmentSize = segment & 0x0fff_ffff; // Segment size is the lower 7 bytes
+		segmentType = segment >> 28;  // Uppermost byte indicates the type of this segment
+		segmentSize = segment & 0x0fff_ffff;  // Segment size is the lower 7 bytes
 
 		if (segmentType == 0) {
 			isCode = false;

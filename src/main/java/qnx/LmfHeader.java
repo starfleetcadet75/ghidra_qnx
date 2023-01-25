@@ -47,7 +47,7 @@ public class LmfHeader {
 	private long imageBase;
 	private ArrayList<LmfSegmentHeader> segments;
 
-	public LmfHeader(BinaryReader reader, int nsegments) throws IOException, QnxException {	
+	public LmfHeader(BinaryReader reader, int nsegments) throws IOException, QnxException {
 		version = reader.readNextUnsignedShort();
 		cflags = reader.readNextUnsignedShort();
 		cpu = reader.readNextUnsignedShort();
@@ -56,12 +56,12 @@ public class LmfHeader {
 		stackIndex = reader.readNextUnsignedShort();
 		heapIndex = reader.readNextUnsignedShort();
 		argvIndex = reader.readNextUnsignedShort();
-		reader.readNextShortArray(4);  // spare
+		reader.readNextShortArray(4); // spare
 		codeOffset = reader.readNextUnsignedInt();
 		stackNbytes = reader.readNextUnsignedInt();
 		heapNbytes = reader.readNextUnsignedInt();
 		imageBase = reader.readNextUnsignedInt();
-		reader.readNextIntArray(2);  // spare
+		reader.readNextIntArray(2); // spare
 
 		// Create the segment headers
 		segments = new ArrayList<LmfSegmentHeader>();

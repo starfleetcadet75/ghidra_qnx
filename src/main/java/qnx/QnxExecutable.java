@@ -30,6 +30,8 @@ public class QnxExecutable {
 		int nsegments = (record.getDataNbytes() - LmfConstants.LMF_HEADER_SIZE) / 4;
 
 		this.header = new LmfHeader(reader, nsegments);
+
+		Msg.info(this, "Parsed QNX header:\n" + this.header.toString());
 	}
 
 	public void parse() throws IOException, QnxException {
@@ -42,7 +44,7 @@ public class QnxExecutable {
 			LmfRecord record = new LmfRecord(reader);
 			int recordType = record.getRecordType();
 
-			Msg.debug(this, "Parsing record type: " + recordType);
+			Msg.info(this, "Parsing record type: " + recordType);
 
 			if (recordType == LmfConstants.LMF_IMAGE_END_REC) {
 				// Processing is complete when an image end record is encountered
@@ -64,6 +66,8 @@ public class QnxExecutable {
 					throw new QnxException("Bad segment index on LOAD_REC");
 				}
 
+				Msg.info(this, "Parsed load rec:\n" + rec.toString());
+
 				// Get the segment that this data is to be loaded into
 				LmfSegmentHeader segmentHeader = header.getSegments().get(rec.getSegmentIndex());
 				segmentHeader.addDataBlock(rec);
@@ -71,11 +75,12 @@ public class QnxExecutable {
 
 			case LmfConstants.LMF_FIXUP_REC:
 				Msg.debug(this, "Parsing record type: Fixup");
-				
-				// TODO: See https://github.com/open-watcom/open-watcom-v2/blob/master/bld/exedump/c/qnxexe.c#L190
+
+				// TODO: See
+				// https://github.com/open-watcom/open-watcom-v2/blob/master/bld/exedump/c/qnxexe.c#L190
 				// `emu387` has a fixup table
-				//int size = record.getDataNbytes();
-				
+				// int size = record.getDataNbytes();
+
 				break;
 
 			case LmfConstants.LMF_8087_FIXUP_REC:
@@ -101,7 +106,7 @@ public class QnxExecutable {
 			}
 		}
 	}
-	
+
 	public LmfHeader getLmfHeader() {
 		return header;
 	}

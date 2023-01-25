@@ -10,6 +10,7 @@ import ghidra.app.util.importer.MessageLog;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSpace;
 import ghidra.program.model.lang.Language;
+import ghidra.util.Msg;
 
 public class LmfSegmentHeader {
 	private String segmentName;
@@ -26,8 +27,8 @@ public class LmfSegmentHeader {
 		dataBlocks = new ArrayList<LmfLoadRecord>();
 
 		int segment = reader.readNextInt();
-		segmentType = segment >> 28;  // Uppermost byte indicates the type of this segment
-		segmentSize = segment & 0x0fff_ffff;  // Segment size is the lower 7 bytes
+		segmentType = segment >> 28; // Uppermost byte indicates the type of this segment
+		segmentSize = segment & 0x0fff_ffff; // Segment size is the lower 7 bytes
 
 		if (segmentType == 0) {
 			isCode = false;
@@ -166,16 +167,11 @@ public class LmfSegmentHeader {
 	}
 
 	public class SectionStream extends InputStream {
-		/**
-		 * Maximum zero bytes added to pad initialized segments
-		 */
-		public final static long MAX_UNINITIALIZED_FILL = 0x2000;
-
 		private BinaryReader reader;
 		private MessageLog log;
 		private long pointer; // Overall position within segment, relative to starting address
 		private byte[] buffer; // Current buffer
-		private int bufferpointer; // current index into buffer
+		private int bufferPointer; // current index into buffer
 		private int dataUpNext; // Index of next data section OmfIteratedData/OmfEnumeratedData to be buffered
 
 		public SectionStream(BinaryReader reader, MessageLog log) throws IOException {
@@ -200,24 +196,24 @@ public class LmfSegmentHeader {
 			while (dataUpNext < dataBlocks.size()) {
 				LmfLoadRecord data = dataBlocks.get(dataUpNext);
 
+				Msg.info(this, "Filling bytes from:\n" + data.toString());
+
 				if (pointer < data.getVirtAddr()) {
 					// We have some fill to produce before the next section
 					long size = data.getVirtAddr() - pointer;
-					if (MAX_UNINITIALIZED_FILL < size) {
-						throw new IOException("Unfilled hole in data blocks for segment: " + segmentName);
-					}
 
+					Msg.debug(this, "Unfilled hole in data blocks for segment: " + segmentName);
 					buffer = new byte[(int) size];
 
 					for (int i = 0; i < size; i++) {
 						buffer[i] = 0;
 					}
 
-					bufferpointer = 0;
+					bufferPointer = 0;
 					return;
 				} else if (pointer == data.getVirtAddr()) {
 					buffer = data.getByteArray(reader);
-					bufferpointer = 0;
+					bufferPointer = 0;
 					dataUpNext++;
 
 					if (buffer.length == 0) {
@@ -233,34 +229,28 @@ public class LmfSegmentHeader {
 				}
 			}
 
-			// TODO: Ensure that the warning here showing up in netinfo and others isn't an issue...
-			
 			// There may be filler required after the last block
 			long size = segmentSize - pointer;
-			if (MAX_UNINITIALIZED_FILL < size) {
-				throw new IOException("Large hole at the end of segment: " + segmentName);
-			}
-
 			buffer = new byte[(int) size];
 			for (int i = 0; i < size; i++) {
 				buffer[i] = 0;
 			}
 
-			bufferpointer = 0;
+			bufferPointer = 0;
 		}
 
 		@Override
 		public int read() throws IOException {
 			if (pointer < segmentSize) {
-				if (bufferpointer < buffer.length) {
+				if (bufferPointer < buffer.length) {
 					pointer++;
-					return buffer[bufferpointer++] & 0xff;
+					return buffer[bufferPointer++] & 0xff;
 				}
 
 				try {
 					establishNextBuffer();
 					pointer++;
-					return buffer[bufferpointer++] & 0xff;
+					return buffer[bufferPointer++] & 0xff;
 				} catch (IOException ex) {
 					log.appendMsg(ex.getMessage());
 				}

@@ -61,8 +61,10 @@ public class QnxLoader extends AbstractProgramWrapperLoader {
 				long imageBase = header.getImageBase();
 
 				// QNX programs are either 32 or 16-bit x86 little-endian
-				loadSpecs.add(new LoadSpec(this, imageBase, new LanguageCompilerSpecPair("x86:LE:32:default", "gcc"), true));
-				loadSpecs.add(new LoadSpec(this, imageBase, new LanguageCompilerSpecPair("x86:LE:16:Protected Mode", "default"), true));
+				loadSpecs.add(
+						new LoadSpec(this, imageBase, new LanguageCompilerSpecPair("x86:LE:32:default", "gcc"), true));
+				loadSpecs.add(new LoadSpec(this, imageBase,
+						new LanguageCompilerSpecPair("x86:LE:16:Protected Mode", "default"), true));
 			}
 		} catch (QnxException ex) {
 			// its not a QNX file
@@ -128,7 +130,7 @@ public class QnxLoader extends AbstractProgramWrapperLoader {
 					segmentAddress, segment.getRawDataStream(reader, log), segmentSize,
 					"Address:0x" + Long.toHexString(segmentAddress.getOffset()) + " " + "Size:0x"
 							+ Long.toHexString(segmentSize),
-							null, segment.isReadable(), segment.isWritable(), segment.isExecutable(), log, monitor);
+					null, segment.isReadable(), segment.isWritable(), segment.isExecutable(), log, monitor);
 
 			if (block != null) {
 				log.appendMsg("Created Initialized Block: " + segment.getSegmentName() + " @ " + segmentAddress);

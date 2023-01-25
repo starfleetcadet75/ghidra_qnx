@@ -25,10 +25,10 @@ public class LmfRecord {
 	private short dataNbytes;
 
 	public LmfRecord(BinaryReader reader) throws IOException {
-		recordType = reader.readNextByte();  // the record type
-		reader.readNextByte();  // reserved
-		dataNbytes = reader.readNextShort();  // size of the following data record
-		reader.readNextShort();  // spare
+		recordType = reader.readNextByte(); // the record type
+		reader.readNextByte(); // reserved
+		dataNbytes = reader.readNextShort(); // size of the following data record
+		reader.readNextShort(); // spare
 	}
 
 	public byte getRecordType() {
